@@ -5,3 +5,5 @@ Ansible Playbook to free space on Windows Machines, commands are run with Powers
 - Run Cleanmgr
 - Run DISM Cleanup
 - Clear all User Profiles temp files present in the System
+
+Thanks to David Norman https://github.com/deekayen, who wrote a similiar function as Ansible Role: https://github.com/deekayen/ansible-role-cleanmgr
