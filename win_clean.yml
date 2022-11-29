@@ -20,15 +20,15 @@
     ignore_errors: true
   - debug:
       var: deltmp_run
-      verbosity: 1
+      #verbosity: 1
 
   - name: "Check for cleanmgr binary."
     win_stat:
       path: "{{ cleanmgr_install_path }}"
     register: cleanmgr_path
   - debug:
-     var: cleanmgr_path
-     verbosity: 1
+      var: cleanmgr_path
+      #verbosity: 1
 
 
   - block:
@@ -46,23 +46,23 @@
         vars:
           cleanmgr_install
           cleanmgr_mui_install
-        verbosity: 1
+        #verbosity: 1
 
   - name: "Check for existing cleanmgr binary (again)."
     win_stat:
       path: "{{ cleanmgr_install_path }}"
     register: cleanmgr_path
   - debug:
-     var: cleanmgr_path
-     verbosity: 1
+      var: cleanmgr_path
+      #verbosity: 1
 
   - name: "Enable all Options for Cleanmgr"
     win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\*' | % {New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -PropertyType DWord -Force};
     register: cleanmgr_regrun
     when: cleanmgr_path.stat.exists
   - debug:
-     var: cleanmgr_regrun
-     verbosity: 1
+      var: cleanmgr_regrun
+      #verbosity: 1
 
   - name: "Run Cleanmgr"
     win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/sagerun:0001' -WindowStyle Hidden -Wait"
@@ -72,7 +72,7 @@
     when: cleanmgr_path.stat.exists
   - debug:
       var: cleanmgr_run
-      verbosity: 1
+      #verbosity: 1
 
   - name: "Run DISM Cleanup"
     win_shell: "Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase"
@@ -81,4 +81,4 @@
     register: dism_run
   - debug:
       var: dism_run
-      verbosity: 1
+      #verbosity: 1
