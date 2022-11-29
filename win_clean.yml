@@ -4,6 +4,9 @@
   strategy: free
   serial: 25
   gather_facts: yes
+  become: yes
+  become_method: runas
+  become_user: SYSTEM
   vars:
     cleanmgr_install_path: C:/Windows/System32/cleanmgr.exe
     cleanmgr_sagerun: "0001"
@@ -14,6 +17,7 @@
     win_shell: $tempfolders = @(“C:\Windows\Temp\*”, “C:\Windows\Prefetch\*”, “C:\Documents and Settings\*\Local Settings\temp\*”, “C:\Users\*\Appdata\Local\Temp\*”); Remove-Item $tempfolders -force -recurse
     args:
     register: deltmp_run
+    ignore_errors: true
   - debug:
       var: deltmp_run
       verbosity: 1
@@ -61,7 +65,7 @@
      verbosity: 1
 
   - name: "Run Cleanmgr"
-    win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/sagerun:1' -WindowStyle Hidden -Wait"
+    win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/sagerun:0001' -WindowStyle Hidden -Wait"
     args:
       creates: "C:\\Windows\\Temp\\cleanmgr.log"
     register: cleanmgr_run
