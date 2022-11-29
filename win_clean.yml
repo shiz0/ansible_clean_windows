@@ -9,10 +9,23 @@
     cleanmgr_sagerun: "0001"
 
   tasks:
+
+  - name: "Clear Temp Folders"
+    win_shell: $tempfolders = @(“C:\Windows\Temp\*”, “C:\Windows\Prefetch\*”, “C:\Documents and Settings\*\Local Settings\temp\*”, “C:\Users\*\Appdata\Local\Temp\*”); Remove-Item $tempfolders -force -recurse
+    args:
+    register: deltmp_run
+  - debug:
+      var: deltmp_run
+      verbosity: 1
+
   - name: "Check for cleanmgr binary."
     win_stat:
       path: "{{ cleanmgr_install_path }}"
     register: cleanmgr_path
+  - debug:
+     var: cleanmgr_path
+     verbosity: 1
+
 
   - block:
     - name: "Copy Cleanmgr Binary from WinSxS Folder"
@@ -27,31 +40,32 @@
     - name: Print results
       debug:
         vars:
-          msg:
-           cleanmgr_install
-           cleanmgr_mui_install
+          cleanmgr_install
+          cleanmgr_mui_install
         verbosity: 1
 
   - name: "Check for existing cleanmgr binary (again)."
     win_stat:
       path: "{{ cleanmgr_install_path }}"
     register: cleanmgr_path
+  - debug:
+     var: cleanmgr_path
+     verbosity: 1
 
   - name: "Enable all Options for Cleanmgr"
     win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\*' | % {New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -PropertyType DWord -Force};
     register: cleanmgr_regrun
     when: cleanmgr_path.stat.exists
-
   - debug:
-      var: cleanmgr_regrun
-      verbosity: 1
+     var: cleanmgr_regrun
+     verbosity: 1
 
   - name: "Run Cleanmgr"
     win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/sagerun:1' -WindowStyle Hidden -Wait"
     args:
       creates: "C:\\Windows\\Temp\\cleanmgr.log"
     register: cleanmgr_run
-
+    when: cleanmgr_path.stat.exists
   - debug:
       var: cleanmgr_run
       verbosity: 1
@@ -61,16 +75,6 @@
     args:
       creates: "C:\\Windows\\Temp\\dismclean.log"
     register: dism_run
-
   - debug:
       var: dism_run
-      verbosity: 1
-
-  - name: "Clear Temp Folders"
-    win_shell: $tempfolders = @(“C:\Windows\Temp\*”, “C:\Windows\Prefetch\*”, “C:\Documents and Settings\*\Local Settings\temp\*”, “C:\Users\*\Appdata\Local\Temp\*”); Remove-Item $tempfolders -force -recurse
-    args:
-    register: deltmp_run
-
-  - debug:
-      var: deltmp_run
       verbosity: 1
