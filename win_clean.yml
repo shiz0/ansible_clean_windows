@@ -1,1 +1,76 @@
+---
+- name: Windows Disk Cleanup
+  hosts: all
+  strategy: free
+  serial: 25
+  gather_facts: yes
+  vars:
+    cleanmgr_install_path: C:/Windows/System32/cleanmgr.exe
+    cleanmgr_sagerun: "0001"
 
+  tasks:
+  - name: "Check for cleanmgr binary."
+    win_stat:
+      path: "{{ cleanmgr_install_path }}"
+    register: cleanmgr_path
+
+  - block:
+    - name: "Copy Cleanmgr Binary from WinSxS Folder"
+      win_shell: "Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe -Recurse | Copy-Item -Destination C:\Windows\System32\ -Force"
+      register: cleanmgr_install
+    - name: "Copy Cleanmgr MUI from WinSxS Folder"
+      win_shell: "Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe.mui -Recurse | Copy-Item -Destination C:\Windows\System32\en-US\ -Force"
+      register: cleanmgr_mui_install    
+    when: not cleanmgr_path.stat.exists
+
+    always:
+    - name: Print results
+      debug:
+        vars:
+          msg:
+           cleanmgr_install
+           cleanmgr_mui_install
+        verbosity: 1
+
+  - name: "Check for existing cleanmgr binary (again)."
+    win_stat:
+      path: "{{ cleanmgr_install_path }}"
+    register: cleanmgr_path
+
+  - name: "Enable all Options for Cleanmgr"
+    win_shell: "Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\*' | % {New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -PropertyType DWord -Force};"
+    register: cleanmgr_regrun
+    when: cleanmgr_path.stat.exists
+
+  - debug:
+    var: cleanmgr_regrun
+    verbosity: 1
+
+  - name: "Run Cleanmgr"
+    win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/sagerun:1' -WindowStyle Hidden -Wait"
+    args:
+      creates: "C:\\Windows\\Temp\\cleanmgr.log"
+    register: cleanmgr_run
+
+  - debug:
+      var: cleanmgr_run
+      verbosity: 1
+
+  - name: "Run DISM Cleanup"
+    win_shell: "Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase"
+    args:
+      creates: "C:\\Windows\\Temp\\dismclean.log"
+    register: dism_run
+
+  - debug:
+      var: dism_run
+      verbosity: 1
+
+  - name: "Clear Temp Folders"
+    win_shell: "$tempfolders = @(“C:\Windows\Temp\*”, “C:\Windows\Prefetch\*”, “C:\Documents and Settings\*\Local Settings\temp\*”, “C:\Users\*\Appdata\Local\Temp\*”); Remove-Item $tempfolders -force -recurse"
+    args:
+    register: deltmp_run
+
+  - debug:
+    var: deltmp_run
+    verbosity: 1
