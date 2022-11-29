@@ -43,8 +43,8 @@
     when: cleanmgr_path.stat.exists
 
   - debug:
-    var: cleanmgr_regrun
-    verbosity: 1
+      var: cleanmgr_regrun
+      verbosity: 1
 
   - name: "Run Cleanmgr"
     win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/sagerun:1' -WindowStyle Hidden -Wait"
@@ -72,5 +72,5 @@
     register: deltmp_run
 
   - debug:
-    var: deltmp_run
-    verbosity: 1
+      var: deltmp_run
+      verbosity: 1
