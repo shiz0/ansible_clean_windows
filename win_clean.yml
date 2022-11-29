@@ -16,10 +16,10 @@
 
   - block:
     - name: "Copy Cleanmgr Binary from WinSxS Folder"
-      win_shell: "Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe -Recurse | Copy-Item -Destination C:\Windows\System32\ -Force"
+      win_shell: Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe -Recurse | Copy-Item -Destination C:\Windows\System32\ -Force
       register: cleanmgr_install
     - name: "Copy Cleanmgr MUI from WinSxS Folder"
-      win_shell: "Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe.mui -Recurse | Copy-Item -Destination C:\Windows\System32\en-US\ -Force"
+      win_shell: Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe.mui -Recurse | Copy-Item -Destination C:\Windows\System32\en-US\ -Force
       register: cleanmgr_mui_install    
     when: not cleanmgr_path.stat.exists
 
@@ -38,7 +38,7 @@
     register: cleanmgr_path
 
   - name: "Enable all Options for Cleanmgr"
-    win_shell: "Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\*' | % {New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -PropertyType DWord -Force};"
+    win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\*' | % {New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -PropertyType DWord -Force};
     register: cleanmgr_regrun
     when: cleanmgr_path.stat.exists
 
@@ -67,7 +67,7 @@
       verbosity: 1
 
   - name: "Clear Temp Folders"
-    win_shell: "$tempfolders = @(“C:\Windows\Temp\*”, “C:\Windows\Prefetch\*”, “C:\Documents and Settings\*\Local Settings\temp\*”, “C:\Users\*\Appdata\Local\Temp\*”); Remove-Item $tempfolders -force -recurse"
+    win_shell: $tempfolders = @(“C:\Windows\Temp\*”, “C:\Windows\Prefetch\*”, “C:\Documents and Settings\*\Local Settings\temp\*”, “C:\Users\*\Appdata\Local\Temp\*”); Remove-Item $tempfolders -force -recurse
     args:
     register: deltmp_run
 
