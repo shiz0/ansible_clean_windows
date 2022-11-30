@@ -44,9 +44,9 @@
     - quick
     - full
   - debug:
-    vars:
-      cleanmgr_install
-      cleanmgr_mui_install
+      vars:
+        cleanmgr_install
+        cleanmgr_mui_install
     #verbosity: 1
 
   - name: "Check for existing cleanmgr binary (again)."
