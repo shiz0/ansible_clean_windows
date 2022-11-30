@@ -13,8 +13,8 @@
 
   tasks:
 
-  - name: "Clear Temp Folders"
-    win_shell: $tempfolders = @(“C:\Windows\Temp\*”, “C:\Windows\Prefetch\*”, “C:\Documents and Settings\*\Local Settings\temp\*”, “C:\Users\*\Appdata\Local\Temp\*”); Remove-Item $tempfolders -force -recurse
+  - name: "Remove Temp Files older than 30 days" 
+    win_shell: $tempfolders = @("C:\Windows\Temp\*", "C:\Windows\Prefetch\*", "C:\Documents and Settings\*\Local Settings\temp\*", "C:\Users\*\Appdata\Local\Temp\*"); Get-ChildItem  $tempfolders -Recurse | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item -Force -Recurse
     args:
     register: deltmp_run
     ignore_errors: true
