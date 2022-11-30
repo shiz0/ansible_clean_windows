@@ -70,7 +70,7 @@
 
   - name: "Run Cleanmgr"
     # win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/sagerun:0001' -WindowStyle Hidden -Wait"
-    win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/verylowdisk' -Wait"
+    win_shell: "Start-Process -FilePath cmd -ArgumentList '/c cleanmgr /verylowdisk' -WindowStyle Hidden -wait"
     args:
       creates: "C:\\Windows\\Temp\\cleanmgr.log"
     register: cleanmgr_run
