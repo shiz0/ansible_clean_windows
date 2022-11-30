@@ -9,7 +9,7 @@
   become_user: SYSTEM
   vars:
     cleanmgr_install_path: C:/Windows/System32/cleanmgr.exe
-    cleanmgr_sagerun: "0001"
+#    cleanmgr_sagerun: "0001"
 
   tasks:
 
@@ -36,24 +36,18 @@
       var: cleanmgr_path
       #verbosity: 1
 
-  - block:
-    - name: "Copy Cleanmgr Binary from WinSxS Folder"
-      win_shell: Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe -Recurse | Copy-Item -Destination C:\Windows\System32\ -Force
-      register: cleanmgr_install
-    - name: "Copy Cleanmgr MUI from WinSxS Folder"
-      win_shell: Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe.mui -Recurse | Copy-Item -Destination C:\Windows\System32\en-US\ -Force
-      register: cleanmgr_mui_install    
+  - name: "Copy Cleanmgr from WinSxS Folder"
+    win_shell: Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe -Recurse | Copy-Item -Destination C:\Windows\System32\ -Force; Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe.mui -Recurse | Copy-Item -Destination C:\Windows\System32\en-US\ -Force
+    register: cleanmgr_install  
     when: not cleanmgr_path.stat.exists
     tags:
     - quick
     - full
-    always:
-    - name: Print results
-      debug:
-        vars:
-          cleanmgr_install
-          cleanmgr_mui_install
-        #verbosity: 1
+  - debug:
+    vars:
+      cleanmgr_install
+      cleanmgr_mui_install
+    #verbosity: 1
 
   - name: "Check for existing cleanmgr binary (again)."
     win_stat:
@@ -76,7 +70,7 @@
 
   - name: "Run Cleanmgr"
     # win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/sagerun:0001' -WindowStyle Hidden -Wait"
-    win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/verylowdisk' -WindowStyle Hidden -Wait"
+    win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/verylowdisk' -Wait"
     args:
       creates: "C:\\Windows\\Temp\\cleanmgr.log"
     register: cleanmgr_run
