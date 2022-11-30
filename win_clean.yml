@@ -9,7 +9,6 @@
   become_user: SYSTEM
   vars:
     cleanmgr_install_path: C:/Windows/System32/cleanmgr.exe
-#    cleanmgr_sagerun: "0001"
 
   tasks:
 
@@ -21,9 +20,11 @@
     tags:
     - quick
     - full
+
   - debug:
       var: deltmp_run
       #verbosity: 1
+
 
   - name: "Check for cleanmgr binary."
     win_stat:
@@ -32,9 +33,11 @@
     tags:
     - quick
     - full
+
   - debug:
       var: cleanmgr_path
       #verbosity: 1
+
 
   - name: "Copy Cleanmgr from WinSxS Folder"
     win_shell: Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe -Recurse | Copy-Item -Destination C:\Windows\System32\ -Force; Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe.mui -Recurse | Copy-Item -Destination C:\Windows\System32\en-US\ -Force
@@ -43,11 +46,13 @@
     tags:
     - quick
     - full
+
   - debug:
       vars:
         cleanmgr_install
         cleanmgr_mui_install
     #verbosity: 1
+
 
   - name: "Check for existing cleanmgr binary (again)."
     win_stat:
@@ -56,21 +61,24 @@
     tags:
     - quick
     - full
+
   - debug:
       var: cleanmgr_path
       #verbosity: 1
 
-  # - name: "Enable all Options for Cleanmgr"
-  #   win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\*' | % {New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -PropertyType DWord -Force};
-  #   register: cleanmgr_regrun
-  #   when: cleanmgr_path.stat.exists
-  # - debug:
-  #     var: cleanmgr_regrun
-  #     #verbosity: 1
+
+  - name: "Enable all Options for Cleanmgr"
+    win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\*' | % {New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -PropertyType DWord -Force};
+    register: cleanmgr_regrun
+    when: cleanmgr_path.stat.exists
+
+  - debug:
+      var: cleanmgr_regrun
+      #verbosity: 1
+
 
   - name: "Run Cleanmgr"
-    # win_shell: "Start-Process -FilePath CleanMgr.exe -ArgumentList '/sagerun:0001' -WindowStyle Hidden -Wait"
-    win_shell: "Start-Process -FilePath cmd -ArgumentList '/c cleanmgr /verylowdisk' -WindowStyle Hidden -wait"
+    win_shell: "Start-Process -FilePath cmd -ArgumentList '/c cleanmgr /sagerun:1' -WindowStyle Hidden -wait"
     args:
       creates: "C:\\Windows\\Temp\\cleanmgr.log"
     register: cleanmgr_run
@@ -78,9 +86,11 @@
     tags:
     - quick
     - full
+
   - debug:
       var: cleanmgr_run
       #verbosity: 1
+
 
   - name: "Run DISM Cleanup"
     win_shell: "Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase"
@@ -90,6 +100,7 @@
     tags:
     - never
     - full
+
   - debug:
       var: dism_run
       #verbosity: 1
