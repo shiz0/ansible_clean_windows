@@ -12,7 +12,7 @@
 
   tasks:
 
-  - name: "Check for cleanmgr binary."
+  - name: Check for cleanmgr binary
     win_stat:
       path: "{{ cleanmgr_install_path }}"
     register: cleanmgr_path
@@ -20,7 +20,7 @@
     - quick
     - full
 
-  - name: "Copy Cleanmgr from WinSxS Folder"
+  - name: Copy Cleanmgr from WinSxS Folder
     win_shell: Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe -Recurse | Copy-Item -Destination C:\Windows\System32\ -Force; Get-ChildItem -Path C:\Windows\WinSxS\amd64* -Filter cleanmgr.exe.mui -Recurse | Copy-Item -Destination C:\Windows\System32\en-US\ -Force
     register: cleanmgr_install  
     when: not cleanmgr_path.stat.exists
@@ -28,7 +28,7 @@
     - quick
     - full
 
-  - name: "Check for existing cleanmgr binary (again)."
+  - name: Check for existing cleanmgr binary (again)
     win_stat:
       path: "{{ cleanmgr_install_path }}"
     register: cleanmgr_path
@@ -36,9 +36,9 @@
     - quick
     - full
 
-  - name: Create directory structure
+  - name: Create temp dir
     ansible.windows.win_file:
-      path: C:\ansible
+      path: C:\ProgramData\ansible_tmp
       state: directory
     tags:
     - quick
@@ -47,13 +47,13 @@
   - name: Copy PsExec
     win_copy:
       src: ./PsExec64.exe
-      dest: c:\ansible\PsExec64.exe
+      dest: c:\ProgramData\ansible_tmp\PsExec64.exe
       force: no
     tags:
     - quick
     - full
 
-  - name: "Enable all Options for Cleanmgr"
+  - name: Enable all Options for Cleanmgr
     win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\*' | % {New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -PropertyType DWord -Force};
     register: cleanmgr_regrun
     when: cleanmgr_path.stat.exists
@@ -61,9 +61,9 @@
     - quick
     - full
 
-  - name: "Run Cleanmgr"
+  - name: Run Cleanmgr
     win_psexec:
-      executable: c:\ansible\PsExec64.exe
+      executable: c:\ProgramData\ansible_tmp\PsExec64.exe
       hostnames: "{{ ansible_host }}"
       elevated: true
       nobanner: true
@@ -76,18 +76,26 @@
     - quick
     - full
 
-  - name: "Run DISM Cleanup"
+  - name: Run DISM Cleanup
     win_shell: "Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase"
     register: dism_run
     tags:
     - never
     - full
 
-  - name: "Remove Temp Files older than 30 days" 
+  - name: Remove Temp Files older than 30 days
     win_shell: $tempfolders = @("C:\Windows\Temp\*", "C:\Windows\Prefetch\*", "C:\Documents and Settings\*\Local Settings\temp\*", "C:\Users\*\Appdata\Local\Temp\*"); Get-ChildItem  $tempfolders -Recurse | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item -Force -Recurse
     args:
     register: deltmp_run
     ignore_errors: true
+    tags:
+    - quick
+    - full
+
+  - name: Remove temp dir
+    ansible.windows.win_file:
+      path: c:\ProgramData\ansible_tmp
+      state: absent
     tags:
     - quick
     - full
