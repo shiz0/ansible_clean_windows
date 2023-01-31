@@ -12,15 +12,6 @@
 
   tasks:
 
-  - name: "Remove Temp Files older than 30 days" 
-    win_shell: $tempfolders = @("C:\Windows\Temp\*", "C:\Windows\Prefetch\*", "C:\Documents and Settings\*\Local Settings\temp\*", "C:\Users\*\Appdata\Local\Temp\*"); Get-ChildItem  $tempfolders -Recurse | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item -Force -Recurse
-    args:
-    register: deltmp_run
-    ignore_errors: true
-    tags:
-    - quick
-    - full
-
   - name: "Check for cleanmgr binary."
     win_stat:
       path: "{{ cleanmgr_install_path }}"
@@ -45,14 +36,6 @@
     - quick
     - full
 
-  - name: "Enable all Options for Cleanmgr"
-    win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\*' | % {New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -PropertyType DWord -Force};
-    register: cleanmgr_regrun
-    when: cleanmgr_path.stat.exists
-    tags:
-    - quick
-    - full
-
   - name: Create directory structure
     ansible.windows.win_file:
       path: C:\ansible
@@ -70,6 +53,14 @@
     - quick
     - full
 
+  - name: "Enable all Options for Cleanmgr"
+    win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\*' | % {New-ItemProperty -Path $_.PSPath -Name StateFlags0001 -Value 2 -PropertyType DWord -Force};
+    register: cleanmgr_regrun
+    when: cleanmgr_path.stat.exists
+    tags:
+    - quick
+    - full
+
   - name: "Run Cleanmgr"
     win_psexec:
       executable: c:\ansible\PsExec64.exe
@@ -78,7 +69,7 @@
       nobanner: true
       system: true
       interactive: true
-      command: cleanmgr.exe /sagerun:5
+      command: cleanmgr.exe /sagerun:1
     register: cleanmgr_run
     when: cleanmgr_path.stat.exists
     tags:
@@ -90,4 +81,13 @@
     register: dism_run
     tags:
     - never
+    - full
+
+  - name: "Remove Temp Files older than 30 days" 
+    win_shell: $tempfolders = @("C:\Windows\Temp\*", "C:\Windows\Prefetch\*", "C:\Documents and Settings\*\Local Settings\temp\*", "C:\Users\*\Appdata\Local\Temp\*"); Get-ChildItem  $tempfolders -Recurse | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item -Force -Recurse
+    args:
+    register: deltmp_run
+    ignore_errors: true
+    tags:
+    - quick
     - full
