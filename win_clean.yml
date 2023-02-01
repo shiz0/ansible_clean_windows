@@ -84,7 +84,7 @@
     - full
 
   - name: Remove Temp Files older than 30 days
-    win_shell: $tempfolders = @("C:\Windows\Temp\*", "C:\Windows\Prefetch\*", "C:\Documents and Settings\*\Local Settings\temp\*", "C:\Users\*\Appdata\Local\Temp\*"); Get-ChildItem  $tempfolders -Recurse | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item -Force -Recurse
+    win_shell: $tempfolders = @("C:\Windows\Temp\*", "C:\Windows\Prefetch\*", "C:\Documents and Settings\*\Local Settings\temp\*", "C:\Users\*\Appdata\Local\Temp\*"); Get-ChildItem  $tempfolders -Recurse | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-30)} | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
     args:
     register: deltmp_run
     ignore_errors: true
