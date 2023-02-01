@@ -88,6 +88,7 @@
     args:
     register: deltmp_run
     ignore_errors: true
+    failed_when: deltmp_run.rc > 1
     tags:
     - quick
     - full
