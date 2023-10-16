@@ -1,8 +1,8 @@
 #!/bin/bash
-if command -v unzip > /dev/null
+if [ -z $(command -v unzip) ]; then
+    echo "unzip" binary not found. exiting..
+else
   wget https://download.sysinternals.com/files/PSTools.zip
   unzip PSTools.zip PsExec.exe -d .
   rm -f ./PSTools.zip
-else
-  echo "unzip" binary not found. exiting..
-end
+fi
