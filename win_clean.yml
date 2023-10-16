@@ -46,8 +46,8 @@
 
   - name: Copy PsExec
     win_copy:
-      src: ./PsExec64.exe
-      dest: c:\ProgramData\ansible_tmp\PsExec64.exe
+      src: ./PsExec.exe
+      dest: c:\ProgramData\ansible_tmp\PsExec.exe
       force: no
     tags:
     - quick
@@ -63,7 +63,7 @@
 
   - name: Run Cleanmgr
     win_psexec:
-      executable: c:\ProgramData\ansible_tmp\PsExec64.exe
+      executable: c:\ProgramData\ansible_tmp\PsExec.exe
       hostnames: "{{ ansible_host }}"
       elevated: true
       nobanner: true
